@@ -15,7 +15,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dizlyzen AI Marketing Manager - Pro</title>
+    <title>Dizlyzen AI Marketing Manager - Pro Phase 3</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
         .main-wrapper { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; flex-wrap: wrap; }
@@ -29,12 +29,10 @@ UNIFIED_DASHBOARD_TEMPLATE = """
         .checkbox-group { display: flex; gap: 20px; margin-bottom: 15px; flex-wrap: wrap; }
         .checkbox-group label { font-weight: normal; color: #e2e8f0; cursor: pointer; }
         .counter { font-size: 12px; color: #94a3b8; text-align: right; margin-top: -10px; margin-bottom: 15px; display: block; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .tab-btn { background: #475569; border: none; padding: 8px 12px; color: white; border-radius: 4px; cursor: pointer; font-size: 14px; }
-        .tab-btn.active { background: #0284c7; font-weight: bold; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
         
+        .ai-btn { background: #10b981; color: white; border: none; padding: 8px 12px; font-size: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 15px; width: 100%; }
+        .ai-btn:hover { background: #059669; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #475569; }
         th { color: #38bdf8; }
@@ -53,14 +51,6 @@ UNIFIED_DASHBOARD_TEMPLATE = """
         .message { background: #065f46; color: #a7f3d0; padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center; font-weight: bold; }
     </style>
     <script>
-        function switchTab(evt, tabName) {
-            let tabs = document.getElementsByClassName("tab-content");
-            for (let t of tabs) { t.classList.remove("active"); }
-            let btns = document.getElementsByClassName("tab-btn");
-            for (let b of btns) { b.classList.remove("active"); }
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
-        }
         function updatePreview() {
             let title = document.getElementById("title").value;
             let quote = document.getElementById("quote").value;
@@ -71,12 +61,18 @@ UNIFIED_DASHBOARD_TEMPLATE = """
             let charCount = quote.length;
             document.getElementById("char-count").innerText = charCount + " / 2200 characters";
         }
+        function generateAICaption() {
+            document.getElementById("title").value = "🔥 AI Generated: Boost Your Business Growth!";
+            document.getElementById("quote").value = "Discover the ultimate secret to scaling your brand with automated AI marketing tools!";
+            document.getElementById("hashtags").value = "#AIMarketing #BusinessGrowth #DizlyzenAI #Automation";
+            updatePreview();
+        }
     </script>
 </head>
 <body>
     <div class="main-wrapper">
         <div class="form-container">
-            <h1>🚀 Dizlyzen AI Marketing Manager</h1>
+            <h1>🚀 Dizlyzen AI Manager (Phase 3 - Pro AI)</h1>
             
             {% if message %}
                 <div class="message">{{ message }}</div>
@@ -85,7 +81,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
             <form action="/generate" method="POST" enctype="multipart/form-data">
                 
                 <div class="section-box">
-                    <label for="social_account">Select Connected Social Account / Page:</label>
+                    <label for="social_account">Select Connected Social Account:</label>
                     <select name="social_account" id="social_account">
                         <option value="Dizlyzen Official">📌 Dizlyzen Official (Main Page)</option>
                         <option value="Kautuk Agency Page">📌 Kautuk Agency Page</option>
@@ -100,11 +96,13 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                 </div>
 
                 <div class="section-box">
-                    <label for="campaign_file">Upload Media (Photo/Video - Optional for test):</label>
+                    <label for="campaign_file">Upload Media (Photo/Video):</label>
                     <input type="file" name="campaign_file" id="campaign_file">
                 </div>
 
                 <div class="section-box">
+                    <button type="button" class="ai-btn" onclick="generateAICaption()">✨ Auto-Generate Caption & Hashtags with AI</button>
+
                     <label for="title">Campaign Title:</label>
                     <input type="text" name="title" id="title" value="DR. A.P.J. ABDUL KALAM TRIBUTE" oninput="updatePreview()" required>
 
@@ -117,9 +115,12 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                 </div>
 
                 <div class="section-box">
-                    <label>Schedule Publish Time (24-Hour Format):</label>
+                    <label>Schedule Publish Time & AI Best Time Advisor:</label>
                     <input type="date" name="schedule_date">
-                    <input type="time" name="schedule_time" value="09:00">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="time" name="schedule_time" id="schedule_time" value="18:00" style="flex: 2;">
+                        <button type="button" style="flex: 1; background: #334155; border: 1px solid #38bdf8; color: #38bdf8; border-radius: 6px; cursor: pointer; font-size: 12px; margin-bottom: 15px;" onclick="document.getElementById('schedule_time').value='18:00'">🤖 AI Best Time (18:00)</button>
+                    </div>
 
                     <label for="action_type">Workflow Action:</label>
                     <select name="action_type" id="action_type">
@@ -193,7 +194,7 @@ def generate_and_publish():
         new_entry = {"id": len(CAMPAIGN_HISTORY)+1, "title": title, "platform": ", ".join(platforms), "status": status, "date": "Just Now"}
         CAMPAIGN_HISTORY.insert(0, new_entry)
 
-        success_msg = f"✅ Campaign '{title}' for account [{account}] saved successfully as [{status}]!"
+        success_msg = f"✅ Phase 3 Campaign '{title}' for [{account}] saved successfully as [{status}]!"
         return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY, message=success_msg)
 
     except Exception as e:

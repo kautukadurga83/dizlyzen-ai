@@ -3,7 +3,6 @@ from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
-# Updated Unified Dashboard Template with Age Group & Location Targeting
 UNIFIED_DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -17,10 +16,12 @@ UNIFIED_DASHBOARD_TEMPLATE = """
         h1 { text-align: center; color: #38bdf8; margin-bottom: 25px; }
         .section-box { background: #334155; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #475569; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: #cbd5e1; }
-        input[type="text"], textarea, select { width: 100%; padding: 10px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
-        input[type="file"], input[type="datetime-local"] { width: 100%; padding: 8px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
+        input[type="text"], textarea, select, input[type="date"], input[type="time"] { width: 100%; padding: 10px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
+        input[type="file"] { width: 100%; padding: 8px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
         .checkbox-group { display: flex; gap: 20px; margin-bottom: 15px; flex-wrap: wrap; }
         .checkbox-group label { font-weight: normal; color: #e2e8f0; cursor: pointer; }
+        .time-row { display: flex; gap: 15px; }
+        .time-row > div { flex: 1; }
         button { background: #0284c7; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.2s; }
         button:hover { background: #0369a1; }
         .message { background: #065f46; color: #a7f3d0; padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center; font-weight: bold; }
@@ -74,7 +75,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                 <input type="text" name="hashtags" id="hashtags" value="#InstaReel #Marketing #DizlyzenAI #Trending">
             </div>
 
-            <!-- Audience Targeting (Age & Location) -->
+            <!-- Audience Targeting -->
             <div class="section-box">
                 <label for="age_group">Target Age Group:</label>
                 <select name="age_group" id="age_group">
@@ -102,10 +103,26 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                 <input type="text" name="destination_link" id="destination_link" placeholder="https://yourwebsite.com or WhatsApp link">
             </div>
 
-            <!-- Advanced Scheduling -->
+            <!-- Advanced 24-Hour Scheduling & Automation -->
             <div class="section-box">
-                <label for="schedule_time">Schedule Publish Time (Auto-Automation):</label>
-                <input type="datetime-local" name="schedule_time" id="schedule_time">
+                <label>Schedule Publish Time (24-Hour Format):</label>
+                <div class="time-row">
+                    <div>
+                        <label for="schedule_date" style="font-size: 13px; color: #94a3b8;">Date:</label>
+                        <input type="date" name="schedule_date" id="schedule_date">
+                    </div>
+                    <div>
+                        <label for="schedule_time" style="font-size: 13px; color: #94a3b8;">Time (24 Hrs):</label>
+                        <input type="time" name="schedule_time" id="schedule_time" value="09:00">
+                    </div>
+                </div>
+
+                <label for="recurrence">Campaign Duration / Frequency:</label>
+                <select name="recurrence" id="recurrence">
+                    <option value="One-Time">One-Time Post (At selected 24h time)</option>
+                    <option value="Daily 30 Days">🔄 Daily for 1 Month (At selected 24h time daily)</option>
+                    <option value="Weekly 4 Weeks">📅 Weekly Once for 1 Month (4 Weeks)</option>
+                </select>
 
                 <label for="approval_status">Workflow Status:</label>
                 <select name="approval_status" id="approval_status">
@@ -137,6 +154,9 @@ def generate_and_publish():
         location = request.form.get("location")
         cta = request.form.get("cta")
         link = request.form.get("destination_link")
+        schedule_date = request.form.get("schedule_date")
+        schedule_time = request.form.get("schedule_time")
+        recurrence = request.form.get("recurrence")
         status = request.form.get("approval_status")
         
         file = request.files.get("campaign_file")
@@ -144,7 +164,7 @@ def generate_and_publish():
         if not file or file.filename == "":
             return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message="⚠️ Kripya ek campaign media file select karein!")
 
-        success_msg = f"✅ Campaign '{title}' targeting [{location} | Age: {age_group}] successfully processed for {', '.join(platforms)}! Status: {status}."
+        success_msg = f"✅ Campaign '{title}' scheduled at {schedule_time} (24h) on {schedule_date} ({recurrence}) for {', '.join(platforms)}!"
         return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message=success_msg)
 
     except Exception as e:

@@ -3,13 +3,20 @@ from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
+# In-memory storage for Post History & Drafts (Demo purpose)
+CAMPAIGN_HISTORY = [
+    {"id": 1, "title": "DR. A.P.J. ABDUL KALAM TRIBUTE", "platform": "Instagram, Facebook", "status": "Published", "date": "2026-10-17 09:00"},
+    {"id": 2, "title": "Diwali Special Offer 50% Off", "platform": "Instagram Reels", "status": "Scheduled", "date": "2026-10-20 18:00"},
+    {"id": 3, "title": "New Tech Startup Launch", "platform": "YouTube Shorts", "status": "Draft", "date": "Pending"}
+]
+
 UNIFIED_DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dizlyzen AI Marketing Manager - Pro Phase 1</title>
+    <title>Dizlyzen AI Marketing Manager - Pro Phase 2</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
         .main-wrapper { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; }
@@ -29,6 +36,14 @@ UNIFIED_DASHBOARD_TEMPLATE = """
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
+        /* History Table Styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #475569; }
+        th { color: #38bdf8; }
+        .badge-published { background: #065f46; color: #a7f3d0; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .badge-scheduled { background: #1e3a8a; color: #93c5fd; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .badge-draft { background: #78350f; color: #fde68a; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+
         /* Mobile Mockup Preview */
         .mobile-mockup { background: #000; border: 4px solid #475569; border-radius: 24px; padding: 15px; width: 260px; margin: 0 auto; color: #fff; font-family: sans-serif; }
         .mockup-screen { background: #111; border-radius: 12px; padding: 10px; min-height: 380px; font-size: 13px; }
@@ -65,7 +80,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
 <body>
     <div class="main-wrapper">
         <div class="form-container">
-            <h1>🚀 Dizlyzen AI Marketing Manager (Pro Phase 1)</h1>
+            <h1>🚀 Dizlyzen AI Marketing Manager (Pro Phase 2)</h1>
             
             {% if message %}
                 <div class="message">{{ message }}</div>
@@ -73,8 +88,15 @@ UNIFIED_DASHBOARD_TEMPLATE = """
 
             <form action="/generate" method="POST" enctype="multipart/form-data">
                 
-                <!-- Target Platforms -->
+                <!-- Multi-Account Support -->
                 <div class="section-box">
+                    <label for="social_account">Select Connected Social Account / Page:</label>
+                    <select name="social_account" id="social_account">
+                        <option value="Dizlyzen Official (Main Page)">📌 Dizlyzen Official (Main Page)</option>
+                        <option value="Kautuk Agency Page">📌 Kautuk Agency Page</option>
+                        <option value="Client Brand X">📌 Client Brand X</option>
+                    </select>
+
                     <label>Select Target Platforms:</label>
                     <div class="checkbox-group">
                         <label><input type="checkbox" name="platforms" value="Instagram" checked> Instagram Reels</label>
@@ -99,7 +121,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                         <label><input type="checkbox" name="fb_story"> Also post to Facebook Story</label>
                     </div>
                     <div id="yt-tab" class="tab-content">
-                        <label for="yt_tags">YouTube Specific Tags (comma separated):</label>
+                        <label for="yt_tags">YouTube Specific Tags:</label>
                         <input type="text" name="yt_tags" placeholder="shorts, trending, educational">
                     </div>
                 </div>
@@ -116,7 +138,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                     <input type="file" name="campaign_file" id="campaign_file">
                 </div>
 
-                <!-- Caption, Hashtags & Character Counter -->
+                <!-- Caption & Counter -->
                 <div class="section-box">
                     <label for="title">Campaign Title:</label>
                     <input type="text" name="title" id="title" value="DR. A.P.J. ABDUL KALAM TRIBUTE" oninput="updatePreview()" required>
@@ -128,33 +150,52 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                     <label for="hashtags">Automatic Hashtags:</label>
                     <input type="text" name="hashtags" id="hashtags" value="#InstaReel #Marketing #DizlyzenAI" oninput="updatePreview()">
 
-                    <label for="first_comment">First Comment Automation (Optional - e.g. Link/Hashtags):</label>
+                    <label for="first_comment">First Comment Automation (Optional):</label>
                     <input type="text" name="first_comment" placeholder="Drop extra hashtags or link in first comment...">
                 </div>
 
-                <!-- CTA & Link -->
-                <div class="section-box">
-                    <label for="cta">Call to Action (CTA):</label>
-                    <select name="cta" id="cta">
-                        <option value="Shop Now">Shop Now</option>
-                        <option value="Learn More">Learn More</option>
-                        <option value="Sign Up">Sign Up</option>
-                        <option value="Message Us">Message Us</option>
-                    </select>
-
-                    <label for="destination_link">Destination Link (URL):</label>
-                    <input type="text" name="destination_link" placeholder="https://yourwebsite.com">
-                </div>
-
-                <!-- Scheduling -->
+                <!-- Scheduling & Workflow Status (Draft Support) -->
                 <div class="section-box">
                     <label>Schedule Publish Time (24-Hour Format):</label>
                     <input type="date" name="schedule_date">
                     <input type="time" name="schedule_time" value="09:00">
+
+                    <label for="action_type">Workflow Action:</label>
+                    <select name="action_type" id="action_type">
+                        <option value="Publish">Publish Now / Schedule</option>
+                        <option value="Draft">💾 Save as Draft (Review Later)</option>
+                    </select>
                 </div>
 
-                <button type="submit" class="submit-btn">✨ Generate & Publish Campaign</button>
+                <button type="submit" class="submit-btn">✨ Process Campaign</button>
             </form>
+
+            <!-- Post History Section -->
+            <div class="section-box" style="margin-top: 30px;">
+                <h3 style="color: #38bdf8; margin-top: 0;">📊 Recent Campaign History & Drafts</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Campaign Title</th>
+                            <th>Platform</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history %}
+                        <tr>
+                            <td>{{ item.title }}</td>
+                            <td>{{ item.platform }}</td>
+                            <td>
+                                {% if item.status == 'Published' %}<span class="badge-published">Published</span>
+                                {% elif item.status == 'Scheduled' %}<span class="badge-scheduled">Scheduled</span>
+                                {% else %}<span class="badge-draft">Draft</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Live Preview Sidebar -->
@@ -176,23 +217,31 @@ UNIFIED_DASHBOARD_TEMPLATE = """
 
 @app.route("/")
 def index():
-    return render_template_string(UNIFIED_DASHBOARD_TEMPLATE)
+    return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY)
 
 @app.route("/generate", methods=["POST"])
 def generate_and_publish():
     try:
         title = request.form.get("title")
         platforms = request.form.getlist("platforms")
+        account = request.form.get("social_account")
+        action_type = request.form.get("action_type")
         file = request.files.get("campaign_file")
         
         if not file or file.filename == "":
-            return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message="⚠️ Kripya ek media file select karein!")
+            return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY, message="⚠️ Kripya ek media file select karein!")
 
-        success_msg = f"✅ Campaign '{title}' successfully processed with Phase 1 Pro features for {', '.join(platforms)}!"
-        return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message=success_msg)
+        status = "Scheduled" if action_type == "Publish" else "Draft"
+        
+        # Add to history list dynamically
+        new_entry = {"id": len(CAMPAIGN_HISTORY)+1, "title": title, "platform": ", ".join(platforms), "status": status, "date": "Just Now"}
+        CAMPAIGN_HISTORY.insert(0, new_entry)
+
+        success_msg = f"✅ Campaign '{title}' for account [{account}] saved successfully as [{status}]!"
+        return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY, message=success_msg)
 
     except Exception as e:
-        return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message=f"❌ Error: {e}")
+        return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY, message=f"❌ Error: {e}")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

@@ -15,7 +15,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dizlyzen AI Marketing Manager - Pro Phase 3</title>
+    <title>Dizlyzen AI Marketing Manager - Pro Phase 4</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
         .main-wrapper { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; flex-wrap: wrap; }
@@ -32,6 +32,16 @@ UNIFIED_DASHBOARD_TEMPLATE = """
         
         .ai-btn { background: #10b981; color: white; border: none; padding: 8px 12px; font-size: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 15px; width: 100%; }
         .ai-btn:hover { background: #059669; }
+
+        /* Emoji Toolbar */
+        .emoji-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .emoji-btn { background: #0f172a; border: 1px solid #64748b; color: #fff; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .emoji-btn:hover { background: #334155; }
+
+        /* Stock Image Picker Grid */
+        .stock-grid { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .stock-thumb { width: 80px; height: 60px; background: #0f172a; border: 2px solid #64748b; border-radius: 4px; cursor: pointer; object-fit: cover; }
+        .stock-thumb:hover { border-color: #38bdf8; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #475569; }
@@ -61,9 +71,17 @@ UNIFIED_DASHBOARD_TEMPLATE = """
             let charCount = quote.length;
             document.getElementById("char-count").innerText = charCount + " / 2200 characters";
         }
+        function addEmoji(emoji) {
+            let quoteBox = document.getElementById("quote");
+            quoteBox.value += emoji;
+            updatePreview();
+        }
+        function selectStock(imgName) {
+            alert("🖼️ Selected Stock Image: " + imgName + " loaded into campaign!");
+        }
         function generateAICaption() {
             document.getElementById("title").value = "🔥 AI Generated: Boost Your Business Growth!";
-            document.getElementById("quote").value = "Discover the ultimate secret to scaling your brand with automated AI marketing tools!";
+            document.getElementById("quote").value = "Discover the ultimate secret to scaling your brand with automated AI marketing tools! 🚀📈";
             document.getElementById("hashtags").value = "#AIMarketing #BusinessGrowth #DizlyzenAI #Automation";
             updatePreview();
         }
@@ -72,7 +90,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
 <body>
     <div class="main-wrapper">
         <div class="form-container">
-            <h1>🚀 Dizlyzen AI Manager (Phase 3 - Pro AI)</h1>
+            <h1>🚀 Dizlyzen AI Manager (Phase 4 - Pro Media)</h1>
             
             {% if message %}
                 <div class="message">{{ message }}</div>
@@ -95,9 +113,18 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                     </div>
                 </div>
 
+                <!-- Media Upload & Free Stock Library -->
                 <div class="section-box">
                     <label for="campaign_file">Upload Media (Photo/Video):</label>
                     <input type="file" name="campaign_file" id="campaign_file">
+
+                    <label style="margin-top: 15px; color: #38bdf8;">⚡ Or Choose Free Pro Stock Image:</label>
+                    <div class="stock-grid">
+                        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100" class="stock-thumb" onclick="selectStock('Abstract Tech')" alt="Tech">
+                        <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=100" class="stock-thumb" onclick="selectStock('Matrix Code')" alt="Code">
+                        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=100" class="stock-thumb" onclick="selectStock('Business Analytics')" alt="Business">
+                        <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=100" class="stock-thumb" onclick="selectStock('Entrepreneur')" alt="Startup">
+                    </div>
                 </div>
 
                 <div class="section-box">
@@ -107,8 +134,18 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                     <input type="text" name="title" id="title" value="DR. A.P.J. ABDUL KALAM TRIBUTE" oninput="updatePreview()" required>
 
                     <label for="quote">Campaign Caption / Description:</label>
-                    <textarea name="quote" id="quote" rows="3" oninput="updatePreview()">"Dreams are not what you see in sleep, is the thing which doesn't let you sleep."</textarea>
-                    <span id="char-count" class="counter">78 / 2200 characters</span>
+                    <!-- Emoji Toolbar -->
+                    <div class="emoji-bar">
+                        <button type="button" class="emoji-btn" onclick="addEmoji('🚀')">🚀</button>
+                        <button type="button" class="emoji-btn" onclick="addEmoji('🔥')">🔥</button>
+                        <button type="button" class="emoji-btn" onclick="addEmoji('💡')">💡</button>
+                        <button type="button" class="emoji-btn" onclick="addEmoji('📈')">📈</button>
+                        <button type="button" class="emoji-btn" onclick="addEmoji('⭐')">⭐</button>
+                        <button type="button" class="emoji-btn" onclick="addEmoji('💻')">💻</button>
+                        <button type="button" class="emoji-btn" onclick="addEmoji('🎯')">🎯</button>
+                    </div>
+                    <textarea name="quote" id="quote" rows="3" oninput="updatePreview()">"Dreams are not what you see in sleep, is the thing which doesn't let you sleep." 🚀</textarea>
+                    <span id="char-count" class="counter">80 / 2200 characters</span>
 
                     <label for="hashtags">Automatic Hashtags:</label>
                     <input type="text" name="hashtags" id="hashtags" value="#InstaReel #Marketing #DizlyzenAI" oninput="updatePreview()">
@@ -165,7 +202,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                 <div class="mockup-screen">
                     <div class="mockup-header" id="prev-title">DR. A.P.J. ABDUL KALAM TRIBUTE</div>
                     <div class="mockup-img">Media Preview</div>
-                    <div class="mockup-caption" id="prev-text">"Dreams are not what you see in sleep, is the thing which doesn't let you sleep." #InstaReel #Marketing #DizlyzenAI</div>
+                    <div class="mockup-caption" id="prev-text">"Dreams are not what you see in sleep, is the thing which doesn't let you sleep." 🚀 #InstaReel #Marketing #DizlyzenAI</div>
                 </div>
             </div>
         </div>
@@ -194,7 +231,7 @@ def generate_and_publish():
         new_entry = {"id": len(CAMPAIGN_HISTORY)+1, "title": title, "platform": ", ".join(platforms), "status": status, "date": "Just Now"}
         CAMPAIGN_HISTORY.insert(0, new_entry)
 
-        success_msg = f"✅ Phase 3 Campaign '{title}' for [{account}] saved successfully as [{status}]!"
+        success_msg = f"✅ Phase 4 Campaign '{title}' for [{account}] saved successfully as [{status}]!"
         return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY, message=success_msg)
 
     except Exception as e:

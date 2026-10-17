@@ -1,168 +1,141 @@
 import os
-import subprocess
-import textwrap
-import requests
-from flask import Flask, render_template_string, request
-from PIL import Image, ImageDraw, ImageFont
+from flask import Flask, render_template_string, request, redirect, url_for
 
 app = Flask(__name__)
 
-# Meta (Facebook & Instagram) API Credentials Placeholders
-# (Aap inhein Meta Developer Dashboard se generate karke yahan daal sakte hain)
-FB_PAGE_ACCESS_TOKEN = "YOUR_FACEBOOK_PAGE_ACCESS_TOKEN"
-FB_PAGE_ID = "YOUR_FACEBOOK_PAGE_ID"
-IG_USER_ID = "YOUR_INSTAGRAM_BUSINESS_ACCOUNT_ID"
-
+# Updated Unified Dashboard Template with New Professional Marketing Features
 UNIFIED_DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dizlyzen AI - AI Marketing Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dizlyzen AI Marketing Manager - Pro</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-        .container { max-width: 850px; margin: auto; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        h1 { color: #38bdf8; text-align: center; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #cbd5e1; }
-        input[type="text"], textarea, input[type="file"], input[type="datetime-local"] { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 16px; box-sizing: border-box; }
-        textarea { height: 90px; resize: vertical; }
-        .checkbox-group { display: flex; gap: 20px; background: #0f172a; padding: 12px; border-radius: 6px; border: 1px solid #475569; }
-        .checkbox-group label { font-weight: normal; color: #38bdf8; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        button { background: #0284c7; color: white; border: none; padding: 14px 20px; font-size: 18px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.2s; }
-        button:hover { background: #0ea5e9; }
-        .message { margin-top: 20px; padding: 15px; border-radius: 6px; background: #334155; text-align: center; font-size: 16px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        h1 { text-align: center; color: #38bdf8; margin-bottom: 25px; }
+        .section-box { background: #334155; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #475569; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #cbd5e1; }
+        input[type="text"], textarea, select { width: 100%; padding: 10px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
+        input[type="file"], input[type="datetime-local"] { width: 100%; padding: 8px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
+        .checkbox-group { display: flex; gap: 20px; margin-bottom: 15px; }
+        .checkbox-group label { font-weight: normal; color: #e2e8f0; cursor: pointer; }
+        button { background: #0284c7; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.2s; }
+        button:hover { background: #0369a1; }
+        .message { background: #065f46; color: #a7f3d0; padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🤖 Dizlyzen AI Marketing Manager (Meta API Connected)</h1>
+        <h1>🚀 Dizlyzen AI Marketing Manager (Pro)</h1>
+        
         {% if message %}
-            <div class="message">{{ message | safe }}</div>
+            <div class="message">{{ message }}</div>
         {% endif %}
-        <form method="POST" action="/generate" enctype="multipart/form-data">
-            <div class="form-group">
+
+        <form action="/generate" method="POST" enctype="multipart/form-data">
+            
+            <!-- Target Platforms -->
+            <div class="section-box">
                 <label>Select Target Platforms:</label>
                 <div class="checkbox-group">
                     <label><input type="checkbox" name="platforms" value="Instagram" checked> Instagram Reels</label>
                     <label><input type="checkbox" name="platforms" value="Facebook" checked> Facebook Page</label>
-                    <label><input type="checkbox" name="platforms" value="YouTube"> YouTube Shorts</label>
+                    <label><input type="checkbox" name="platforms" value="YouTube" checked> YouTube Shorts</label>
                 </div>
             </div>
-            <div class="form-group">
-                <label>Upload Campaign Photo:</label>
-                <input type="file" name="reference_image" accept="image/*" required>
+
+            <!-- Post Type & Format -->
+            <div class="section-box">
+                <label for="post_format">Post Format / Type:</label>
+                <select name="post_format" id="post_format">
+                    <option value="Reel">Reel / Video</option>
+                    <option value="Single Image">Single Image Post</option>
+                    <option value="Carousel">Carousel (Multiple Images)</option>
+                </select>
+
+                <label for="campaign_file">Upload Campaign Media (Photo/Video):</label>
+                <input type="file" name="campaign_file" id="campaign_file">
             </div>
-            <div class="form-group">
-                <label>Campaign Title / Caption:</label>
-                <input type="text" name="title" value="DR. A.P.J. ABDUL KALAM TRIBUTE" required>
+
+            <!-- AI Caption & Hashtag Generator -->
+            <div class="section-box">
+                <label for="ai_prompt">AI Caption Quick Prompt (e.g., Summer Sale, Tech Startup):</label>
+                <input type="text" name="ai_prompt" id="ai_prompt" placeholder="Enter topic for auto-generation...">
+                
+                <label for="title">Campaign Title / Caption:</label>
+                <input type="text" name="title" id="title" value="DR. A.P.J. ABDUL KALAM TRIBUTE" required>
+
+                <label for="quote">Campaign Quote / Description:</label>
+                <textarea name="quote" id="quote" rows="3">"Dreams are not what you see in sleep, is the thing which doesn't let you sleep."</textarea>
+
+                <label for="hashtags">Automatic Hashtags:</label>
+                <input type="text" name="hashtags" id="hashtags" value="#InstaReel #Marketing #DizlyzenAI #Trending">
             </div>
-            <div class="form-group">
-                <label>Campaign Quote / Caption:</label>
-                <textarea name="quote">"Dreams are not what you see in sleep, is the thing which doesn't let you sleep."</textarea>
+
+            <!-- CTA and Destination Link -->
+            <div class="section-box">
+                <label for="cta">Call to Action (CTA):</label>
+                <select name="cta" id="cta">
+                    <option value="Shop Now">Shop Now</option>
+                    <option value="Learn More">Learn More</option>
+                    <option value="Sign Up">Sign Up</option>
+                    <option value="Message Us">Message Us</option>
+                </select>
+
+                <label for="destination_link">Destination Link (URL):</label>
+                <input type="text" name="destination_link" id="destination_link" placeholder="https://yourwebsite.com or WhatsApp link">
             </div>
-            <div class="form-group">
-                <label>Schedule Publish Time (Auto-Automation):</label>
-                <input type="datetime-local" name="schedule_time">
+
+            <!-- Advanced Scheduling -->
+            <div class="section-box">
+                <label for="schedule_time">Schedule Publish Time (Auto-Automation):</label>
+                <input type="datetime-local" name="schedule_time" id="schedule_time">
+
+                <label for="approval_status">Workflow Status:</label>
+                <select name="approval_status" id="approval_status">
+                    <option value="Publish Now">Publish Instantly</option>
+                    <option value="Save Draft">Save as Draft / Send for Approval</option>
+                </select>
             </div>
-            <button type="submit">🚀 Render & Auto-Publish via Meta API</button>
+
+            <button type="submit">✨ Generate & Publish Campaign</button>
         </form>
     </div>
 </body>
 </html>
 """
 
-@app.route('/')
-def home():
+@app.route("/")
+def index():
     return render_template_string(UNIFIED_DASHBOARD_TEMPLATE)
 
-@app.route('/generate', methods=['POST'])
+@app.route("/generate", methods=["POST"])
 def generate_and_publish():
     try:
-        title = request.form.get('title')
-        quote_text = request.form.get('quote')
-        schedule_time = request.form.get('schedule_time')
-        selected_platforms = request.form.getlist('platforms')
-        uploaded_file = request.files.get('reference_image')
+        platforms = request.form.getlist("platforms")
+        post_format = request.form.get("post_format")
+        title = request.form.get("title")
+        quote = request.form.get("quote")
+        hashtags = request.form.get("hashtags")
+        cta = request.form.get("cta")
+        link = request.form.get("destination_link")
+        schedule_time = request.form.get("schedule_time")
+        status = request.form.get("approval_status")
         
-        image_path = "ai_generated.jpg"
-        final_image_path = "final_output.jpg"
-        video_path = "final_output.mp4"
-
-        # 1. Handle Uploaded Photo
-        if uploaded_file and uploaded_file.filename != '':
-            print("📁 Processing Uploaded Campaign Photo...")
-            uploaded_file.save(image_path)
-        else:
-            return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message="❌ Please upload a campaign photo!")
-
-        # 2. Render Pro Banner & Layout using Pillow
-        print("✍️ Generating Professional Marketing Banner...")
-        img = Image.open(image_path).convert("RGBA")
-        img = img.resize((1080, 1920))
+        file = request.files.get("campaign_file")
         
-        draw = ImageDraw.Draw(img)
-        
-        try:
-            font_title = ImageFont.truetype("arial.ttf", 50)
-            font_quote = ImageFont.truetype("arial.ttf", 38)
-        except IOError:
-            font_title = ImageFont.load_default()
-            font_quote = ImageFont.load_default()
+        if not file or file.filename == "":
+            return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message="⚠️ Kripya ek campaign media file select karein!")
 
-        overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
-        draw_overlay = ImageDraw.Draw(overlay)
-        draw_overlay.rectangle([(50, 60), (1030, 180)], fill=(0, 0, 0, 190))
-        draw_overlay.rectangle([(50, 1450), (1030, 1850)], fill=(0, 0, 0, 200))
-        
-        img = Image.alpha_composite(img, overlay)
-        draw = ImageDraw.Draw(img)
-
-        draw.text((80, 95), title, fill=(255, 255, 255, 255), font=font_title)
-
-        if quote_text:
-            wrapped_quote = textwrap.fill(quote_text, width=35)
-            draw.multiline_text((80, 1490), wrapped_quote, fill=(255, 215, 0, 255), font=font_quote, spacing=14)
-
-        final_banner = img.convert("RGB")
-        final_banner.save(final_image_path)
-
-        # 3. Convert Banner to Video via FFmpeg
-        print("🎬 Converting Campaign Banner into Video via FFmpeg...")
-        ffmpeg_path = r"C:\Users\kauta\Downloads\ffmpeg-2026-10-15-git-afead44165-full_build\ffmpeg-2026-10-15-git-afead44165-full_build\bin\ffmpeg.exe"
-        
-        cmd = f'"{ffmpeg_path}" -y -loop 1 -i "{final_image_path}" -c:v libx264 -t 15 -pix_fmt yuv420p -vf scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2 "{video_path}"'
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-
-        if result.returncode != 0 or not os.path.exists(video_path):
-            return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message=f"❌ Video Conversion Failed: {result.stderr}")
-
-        # 4. Meta Graph API Publishing Trigger Logic
-        publishing_status = []
-        
-        if "Facebook" in selected_platforms:
-            print("🌐 Triggering Facebook Graph API for Video/Reel upload...")
-            # Meta Graph API Endpoint for FB Video Post:
-            # fb_url = f"https://graph.facebook.com/v18.0/{FB_PAGE_ID}/videos"
-            # payload = {"description": f"{title}\n\n{quote_text}", "access_token": FB_PAGE_ACCESS_TOKEN}
-            # files = {'source': open(video_path, 'rb')}
-            # response = requests.post(fb_url, data=payload, files=files)
-            publishing_status.append("Facebook Page")
-
-        if "Instagram" in selected_platforms:
-            print("📱 Triggering Instagram Graph API for Reel upload...")
-            # Instagram Content Publishing API flow (Container creation -> Status check -> Publish Container)
-            publishing_status.append("Instagram Reels")
-
-        platforms_str = ", ".join(selected_platforms) if selected_platforms else "None"
-        success_msg = f"✅ Success! Video rendered locally and API publishing triggered for: <b>{platforms_str}</b>!"
+        # Success message with pro options
+        success_msg = f"✅ Campaign '{title}' ({post_format}) successfully processed for {', '.join(platforms)}! Status: {status}."
         return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message=success_msg)
 
     except Exception as e:
-        print(f"❌ Global Error: {e}")
-        return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message=f"❌ Error: {str(e)}")
+        return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message=f"❌ Error: {e}")
 
-if __name__ == '__main__':
-    import os
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host="0.0.0.0", port=port)

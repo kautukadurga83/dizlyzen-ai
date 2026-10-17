@@ -1,9 +1,9 @@
 import os
-from flask import Flask, render_template_string, request, redirect, url_for
+from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
-# Updated Unified Dashboard Template with New Professional Marketing Features
+# Updated Unified Dashboard Template with Age Group & Location Targeting
 UNIFIED_DASHBOARD_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -19,7 +19,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
         label { display: block; margin-bottom: 8px; font-weight: 600; color: #cbd5e1; }
         input[type="text"], textarea, select { width: 100%; padding: 10px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
         input[type="file"], input[type="datetime-local"] { width: 100%; padding: 8px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
-        .checkbox-group { display: flex; gap: 20px; margin-bottom: 15px; }
+        .checkbox-group { display: flex; gap: 20px; margin-bottom: 15px; flex-wrap: wrap; }
         .checkbox-group label { font-weight: normal; color: #e2e8f0; cursor: pointer; }
         button { background: #0284c7; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.2s; }
         button:hover { background: #0369a1; }
@@ -74,6 +74,20 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                 <input type="text" name="hashtags" id="hashtags" value="#InstaReel #Marketing #DizlyzenAI #Trending">
             </div>
 
+            <!-- Audience Targeting (Age & Location) -->
+            <div class="section-box">
+                <label for="age_group">Target Age Group:</label>
+                <select name="age_group" id="age_group">
+                    <option value="18-24">18 - 24 (Youth / Students)</option>
+                    <option value="25-34" selected>25 - 34 (Young Professionals)</option>
+                    <option value="35-44">35 - 44 (Adults)</option>
+                    <option value="45-60+">45 - 60+ (Senior Audience)</option>
+                </select>
+
+                <label for="location">Target Location (Country / City):</label>
+                <input type="text" name="location" id="location" value="India (Pan-India)" placeholder="e.g., India, Mumbai, Delhi">
+            </div>
+
             <!-- CTA and Destination Link -->
             <div class="section-box">
                 <label for="cta">Call to Action (CTA):</label>
@@ -119,9 +133,10 @@ def generate_and_publish():
         title = request.form.get("title")
         quote = request.form.get("quote")
         hashtags = request.form.get("hashtags")
+        age_group = request.form.get("age_group")
+        location = request.form.get("location")
         cta = request.form.get("cta")
         link = request.form.get("destination_link")
-        schedule_time = request.form.get("schedule_time")
         status = request.form.get("approval_status")
         
         file = request.files.get("campaign_file")
@@ -129,8 +144,7 @@ def generate_and_publish():
         if not file or file.filename == "":
             return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message="⚠️ Kripya ek campaign media file select karein!")
 
-        # Success message with pro options
-        success_msg = f"✅ Campaign '{title}' ({post_format}) successfully processed for {', '.join(platforms)}! Status: {status}."
+        success_msg = f"✅ Campaign '{title}' targeting [{location} | Age: {age_group}] successfully processed for {', '.join(platforms)}! Status: {status}."
         return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, message=success_msg)
 
     except Exception as e:

@@ -15,7 +15,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dizlyzen AI Marketing Manager - Pro Phase 4</title>
+    <title>Dizlyzen AI Marketing Manager - Pro Phase 5</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
         .main-wrapper { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; flex-wrap: wrap; }
@@ -38,10 +38,16 @@ UNIFIED_DASHBOARD_TEMPLATE = """
         .emoji-btn { background: #0f172a; border: 1px solid #64748b; color: #fff; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 16px; }
         .emoji-btn:hover { background: #334155; }
 
-        /* Stock Image Picker Grid */
+        /* Stock Image Picker */
         .stock-grid { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .stock-thumb { width: 80px; height: 60px; background: #0f172a; border: 2px solid #64748b; border-radius: 4px; cursor: pointer; object-fit: cover; }
         .stock-thumb:hover { border-color: #38bdf8; }
+
+        /* Analytics Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 15px; }
+        .stat-card { background: #0f172a; border: 1px solid #475569; padding: 12px; border-radius: 6px; text-align: center; }
+        .stat-num { font-size: 20px; font-weight: bold; color: #38bdf8; }
+        .stat-label { font-size: 11px; color: #94a3b8; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #475569; }
@@ -77,7 +83,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
             updatePreview();
         }
         function selectStock(imgName) {
-            alert("🖼️ Selected Stock Image: " + imgName + " loaded into campaign!");
+            alert("🖼️ Selected Stock Image: " + imgName + " loaded!");
         }
         function generateAICaption() {
             document.getElementById("title").value = "🔥 AI Generated: Boost Your Business Growth!";
@@ -90,11 +96,34 @@ UNIFIED_DASHBOARD_TEMPLATE = """
 <body>
     <div class="main-wrapper">
         <div class="form-container">
-            <h1>🚀 Dizlyzen AI Manager (Phase 4 - Pro Media)</h1>
+            <h1>🚀 Dizlyzen AI Manager (Phase 5 - Pro Analytics)</h1>
             
             {% if message %}
                 <div class="message">{{ message }}</div>
             {% endif %}
+
+            <!-- Analytics & Insights Overview Box -->
+            <div class="section-box">
+                <h3 style="color: #38bdf8; margin-top: 0; margin-bottom: 12px;">📈 Live Performance Insights (Meta & YouTube)</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-num">45.2K</div>
+                        <div class="stat-label">Total Reach</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num">12.8K</div>
+                        <div class="stat-label">Total Impressions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num">3,420</div>
+                        <div class="stat-label">Likes & Reactions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num">98.4%</div>
+                        <div class="stat-label">Engagement Rate</div>
+                    </div>
+                </div>
+            </div>
 
             <form action="/generate" method="POST" enctype="multipart/form-data">
                 
@@ -113,7 +142,6 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                     </div>
                 </div>
 
-                <!-- Media Upload & Free Stock Library -->
                 <div class="section-box">
                     <label for="campaign_file">Upload Media (Photo/Video):</label>
                     <input type="file" name="campaign_file" id="campaign_file">
@@ -134,7 +162,6 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                     <input type="text" name="title" id="title" value="DR. A.P.J. ABDUL KALAM TRIBUTE" oninput="updatePreview()" required>
 
                     <label for="quote">Campaign Caption / Description:</label>
-                    <!-- Emoji Toolbar -->
                     <div class="emoji-bar">
                         <button type="button" class="emoji-btn" onclick="addEmoji('🚀')">🚀</button>
                         <button type="button" class="emoji-btn" onclick="addEmoji('🔥')">🔥</button>
@@ -170,7 +197,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
             </form>
 
             <div class="section-box" style="margin-top: 30px;">
-                <h3 style="color: #38bdf8; margin-top: 0;">📊 Recent Campaign History & Drafts</h3>
+                <h3 style="color: #38bdf8; margin-top: 0;">📊 Recent Campaign History & Analytics</h3>
                 <table>
                     <thead>
                         <tr>
@@ -231,7 +258,7 @@ def generate_and_publish():
         new_entry = {"id": len(CAMPAIGN_HISTORY)+1, "title": title, "platform": ", ".join(platforms), "status": status, "date": "Just Now"}
         CAMPAIGN_HISTORY.insert(0, new_entry)
 
-        success_msg = f"✅ Phase 4 Campaign '{title}' for [{account}] saved successfully as [{status}]!"
+        success_msg = f"✅ Phase 5 Campaign '{title}' for [{account}] saved successfully as [{status}]!"
         return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY, message=success_msg)
 
     except Exception as e:

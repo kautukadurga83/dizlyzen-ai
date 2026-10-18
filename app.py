@@ -6,10 +6,11 @@ app = Flask(__name__)
 
 FB_PAGE_ID = "1352257637972181"
 IG_USER_ID = "17841425343804485"
-FB_ACCESS_TOKEN = os.environ.get("FB_ACCESS_TOKEN", "")
+# Fresh Live Page Access Token embedded
+FB_ACCESS_TOKEN = "EAAO2wTXY7FUBS3PqAn8aTAljlN9FwCXPZCNEnc9CoSBMcaumLrbKF7eZBwCIkkTeiddPfO2TtY4ZCKiTc4O4CPg3ziUh1azpZAp5u3IZB0Fy6HGpbIMVxfHmg6R7b1ri0z2YnwYLXeIbZC00ZBXiRJV7IcnddYrbwKCZCeIfkKlFHFiuLIhy5ynIX4eUTe7iZAOztCx4Qy6duarAwJ7htFjm7YZCR7dBsVn0RmGs0XKCavtMZBa2cYDwOSUunH1W0LdjYwQuPq97Yn2qZBnThP3NnRZBI"
 
 CAMPAIGN_HISTORY = [
-    {"id": 1, "title": "DR. A.P.J. ABDUL KALAM TRIBUTE", "platform": "Instagram, Facebook, YouTube", "status": "Published", "date": "2026-10-18 17:30"},
+    {"id": 1, "title": "DR. A.P.J. ABDUL KALAM TRIBUTE", "platform": "Instagram, Facebook, YouTube", "status": "Published", "date": "2026-10-18 19:25"},
 ]
 
 UNIFIED_DASHBOARD_TEMPLATE = """
@@ -18,7 +19,7 @@ UNIFIED_DASHBOARD_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dizlyzen AI Manager - Real API Dispatch</title>
+    <title>Dizlyzen AI Manager - Live Production</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
         .main-wrapper { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; flex-wrap: wrap; }
@@ -27,71 +28,23 @@ UNIFIED_DASHBOARD_TEMPLATE = """
         h1 { text-align: center; color: #38bdf8; margin-bottom: 25px; font-size: 24px; }
         .section-box { background: #334155; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #475569; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: #cbd5e1; }
-        input[type="text"], textarea, select, input[type="date"], input[type="time"] { width: 100%; padding: 10px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
-        input[type="file"] { width: 100%; padding: 8px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
+        input[type="text"], textarea, select { width: 100%; padding: 10px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
         .checkbox-group { display: flex; gap: 20px; margin-bottom: 15px; flex-wrap: wrap; }
         .checkbox-group label { font-weight: normal; color: #e2e8f0; cursor: pointer; }
-        .counter { font-size: 12px; color: #94a3b8; text-align: right; margin-top: -10px; margin-bottom: 15px; display: block; }
-        
-        .ai-btn { background: #10b981; color: white; border: none; padding: 8px 12px; font-size: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 15px; width: 100%; }
-        .ai-btn:hover { background: #059669; }
-
         .security-bar { background: #064e3b; border: 1px solid #059669; color: #a7f3d0; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
-        
-        .emoji-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-        .emoji-btn { background: #0f172a; border: 1px solid #64748b; color: #fff; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        .emoji-btn:hover { background: #334155; }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 15px; }
-        .stat-card { background: #0f172a; border: 1px solid #475569; padding: 12px; border-radius: 6px; text-align: center; }
-        .stat-num { font-size: 20px; font-weight: bold; color: #38bdf8; }
-        .stat-label { font-size: 11px; color: #94a3b8; }
-
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #475569; }
         th { color: #38bdf8; }
         .badge-published { background: #065f46; color: #a7f3d0; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-        .badge-scheduled { background: #1e3a8a; color: #93c5fd; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-        .badge-draft { background: #78350f; color: #fde68a; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-
-        .mobile-mockup { background: #000; border: 4px solid #475569; border-radius: 24px; padding: 15px; width: 260px; margin: 0 auto; color: #fff; font-family: sans-serif; }
-        .mockup-screen { background: #111; border-radius: 12px; padding: 10px; min-height: 380px; font-size: 13px; }
-        .mockup-header { font-weight: bold; color: #38bdf8; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        .mockup-img { width: 100%; height: 160px; background: #333; border-radius: 6px; object-fit: cover; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; color: #777; font-size: 11px; }
-        .mockup-caption { word-break: break-all; color: #e2e8f0; font-size: 12px; margin-bottom: 8px; }
-        
         button.submit-btn { background: #0284c7; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.2s; }
         button.submit-btn:hover { background: #0369a1; }
         .message { background: #065f46; color: #a7f3d0; padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center; font-weight: bold; }
     </style>
-    <script>
-        function updatePreview() {
-            let title = document.getElementById("title").value;
-            let quote = document.getElementById("quote").value;
-            let hashtags = document.getElementById("hashtags").value;
-            
-            document.getElementById("prev-title").innerText = title;
-            document.getElementById("prev-text").innerText = quote + " " + hashtags;
-            let charCount = quote.length;
-            document.getElementById("char-count").innerText = charCount + " / 2200 characters";
-        }
-        function addEmoji(emoji) {
-            let quoteBox = document.getElementById("quote");
-            quoteBox.value += emoji;
-            updatePreview();
-        }
-        function generateAICaption() {
-            document.getElementById("title").value = "🔥 AI Generated: Boost Your Business Growth!";
-            document.getElementById("quote").value = "Discover the ultimate secret to scaling your brand with automated AI marketing tools! 🚀📈";
-            document.getElementById("hashtags").value = "#AIMarketing #BusinessGrowth #DizlyzenAI #Automation";
-            updatePreview();
-        }
-    </script>
 </head>
 <body>
     <div class="main-wrapper">
         <div class="form-container">
-            <h1>🚀 Dizlyzen AI Manager (Real API Call)</h1>
+            <h1>🚀 Dizlyzen AI Manager</h1>
             
             <div class="security-bar">
                 <span>🛡️ Real Graph API Execution Mode Active</span>
@@ -112,44 +65,22 @@ UNIFIED_DASHBOARD_TEMPLATE = """
 
                     <label>Select Target Platforms:</label>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="platforms" value="Instagram" checked> Instagram</label>
                         <label><input type="checkbox" name="platforms" value="Facebook" checked> Facebook Page</label>
-                        <label><input type="checkbox" name="platforms" value="YouTube" checked> YouTube Shorts</label>
                     </div>
                 </div>
 
                 <div class="section-box">
-                    <label for="campaign_file">Upload Media (Photo/Video):</label>
-                    <input type="file" name="campaign_file" id="campaign_file">
-                </div>
-
-                <div class="section-box">
-                    <button type="button" class="ai-btn" onclick="generateAICaption()">✨ Auto-Generate Caption & Hashtags with AI</button>
-
                     <label for="title">Campaign Title:</label>
-                    <input type="text" name="title" id="title" value="जातिवाद का अंत और महापुरुषों के विचार" oninput="updatePreview()" required>
+                    <input type="text" name="title" id="title" value="जातिवाद का अंत और महापुरुषों के विचार" required>
 
                     <label for="quote">Campaign Caption / Description:</label>
-                    <div class="emoji-bar">
-                        <button type="button" class="emoji-btn" onclick="addEmoji('🚀')">🚀</button>
-                        <button type="button" class="emoji-btn" onclick="addEmoji('🔥')">🔥</button>
-                    </div>
-                    <textarea name="quote" id="quote" rows="3" oninput="updatePreview()">मानवता और कड़े कानून: जातिवाद के खात्मा की ओर कदम 🚀</textarea>
-                    <span id="char-count" class="counter">55 / 2200 characters</span>
+                    <textarea name="quote" id="quote" rows="3">मानवता और कड़े कानून: जातिवाद के खात्मा की ओर कदम 🚀</textarea>
 
                     <label for="hashtags">Automatic Hashtags:</label>
-                    <input type="text" name="hashtags" id="hashtags" value="#Samantasamiti #DizlyzenAI" oninput="updatePreview()">
+                    <input type="text" name="hashtags" id="hashtags" value="#Samantasamiti #DizlyzenAI">
                 </div>
 
-                <div class="section-box">
-                    <label for="action_type">Workflow Action:</label>
-                    <select name="action_type" id="action_type">
-                        <option value="Publish">🚀 Execute Real API Request</option>
-                        <option value="Draft">💾 Save as Draft</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="submit-btn">✨ Send Live Request to APIs</button>
+                <button type="submit" class="submit-btn">✨ Send Dispatch to APIs</button>
             </form>
 
             <div class="section-box" style="margin-top: 30px;">
@@ -167,25 +98,11 @@ UNIFIED_DASHBOARD_TEMPLATE = """
                         <tr>
                             <td>{{ item.title }}</td>
                             <td>{{ item.platform }}</td>
-                            <td>
-                                {% if item.status == 'Published' %}<span class="badge-published">Published</span>
-                                {% else %}<span class="badge-draft">Draft</span>{% endif %}
-                            </td>
+                            <td><span class="badge-published">Published</span></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-            </div>
-        </div>
-
-        <div class="preview-container">
-            <h3 style="text-align: center; color: #38bdf8; margin-top: 0;">📱 Live Preview</h3>
-            <div class="mobile-mockup">
-                <div class="mockup-screen">
-                    <div class="mockup-header" id="prev-title">जातिवाद का अंत</div>
-                    <div class="mockup-img">Media Preview</div>
-                    <div class="mockup-caption" id="prev-text">मानवता और कड़े कानून 🚀</div>
-                </div>
             </div>
         </div>
     </div>
@@ -203,41 +120,26 @@ def generate_and_publish():
         title = request.form.get("title")
         quote = request.form.get("quote")
         hashtags = request.form.get("hashtags")
-        platforms = request.form.getlist("platforms")
-        action_type = request.form.get("action_type")
         
         full_message = f"{title}\n\n{quote}\n\n{hashtags}"
         api_logs = []
 
-        if action_type == "Publish":
-            # Real Facebook Graph API POST Request
-            if "Facebook" in platforms:
-                fb_url = f"https://graph.facebook.com/v18.0/{FB_PAGE_ID}/feed"
-                payload = {"message": full_message, "access_token": FB_ACCESS_TOKEN}
-                res = requests.post(fb_url, data=payload)
-                res_json = res.json()
-                if "id" in res_json:
-                    api_logs.append("Facebook: Success!")
-                else:
-                    error_msg = res_json.get("error", {}).get("message", "Unknown Token Error")
-                    api_logs.append(f"Facebook Failed: {error_msg}")
-            
-            if "Instagram" in platforms:
-                api_logs.append("Instagram: Requires Permanent Page Token & Container Setup")
-
-            if "YouTube" in platforms:
-                api_logs.append("YouTube: Requires Active OAuth Upload Session")
-
-            status = "Published"
-            msg = f"API Response Log -> {', '.join(api_logs)}"
+        # Direct Facebook Graph API POST Request
+        fb_url = f"https://graph.facebook.com/v18.0/{FB_PAGE_ID}/feed"
+        payload = {"message": full_message, "access_token": FB_ACCESS_TOKEN}
+        res = requests.post(fb_url, data=payload)
+        res_json = res.json()
+        
+        if "id" in res_json:
+            api_logs.append("Facebook: Success! Post Live Published ID: " + res_json["id"])
         else:
-            status = "Draft"
-            msg = f"Campaign saved as Draft."
+            error_msg = res_json.get("error", {}).get("message", "Unknown Error")
+            api_logs.append(f"Facebook Failed: {error_msg}")
 
-        new_entry = {"id": len(CAMPAIGN_HISTORY)+1, "title": title, "platform": ", ".join(platforms), "status": status, "date": "Just Now"}
+        new_entry = {"id": len(CAMPAIGN_HISTORY)+1, "title": title, "platform": "Facebook Page", "status": "Published", "date": "Just Now"}
         CAMPAIGN_HISTORY.insert(0, new_entry)
 
-        return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY, message=msg)
+        return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY, message=f"API Response Log -> {', '.join(api_logs)}")
 
     except Exception as e:
         return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY, message=f"❌ Error: {e}")

@@ -1,167 +1,189 @@
 import os
+import json
 import requests
-from flask import Flask, render_template_string, request
+from flask import Flask, request, jsonify, render_template_string
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-FB_PAGE_ID = "1352257637972181"
-# Aapka wahi token jo abhi active hai
-FB_USER_TOKEN = "EAAO2wTXY7FUBS2AjgGGgK0HpiWkAC2Iv9NCTDZBW2B4LSw2sLPNntd8ws0em4l0Jb37eTF3X05eLNsU01ZBTlUeD3yw2MTuClN9yV9Bs697x1X2Ig7t3atXdmniYOcBg8ZCUMrcnCSyk4dRe6hky8k1K6GfaXToKVs897EpUmT3VZCtJwZCvKwBBxLJXdZCm4BrEmdHZCrxGcADGvDmuOliKh1wWd0g5HJvKb0zqX3ZBMsiN9aHGRZAOydsZCFQ6WSQGlyAUjT3ZCCqBMMDejhvv8Kl"
-
-CAMPAIGN_HISTORY = [
-    {"id": 1, "title": "DR. A.P.J. ABDUL KALAM TRIBUTE", "platform": "Facebook Page", "status": "Published", "date": "2026-10-18 20:50"},
-]
-
-UNIFIED_DASHBOARD_TEMPLATE = """
+HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dizlyzen AI Manager - Photo Post Edition</title>
+    <title>Samanta Samiti Auto Post</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-        .main-wrapper { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; flex-wrap: wrap; }
-        .form-container { flex: 2; min-width: 320px; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        h1 { text-align: center; color: #38bdf8; margin-bottom: 25px; font-size: 24px; }
-        .section-box { background: #334155; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #475569; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #cbd5e1; }
-        input[type="text"], textarea, select { width: 100%; padding: 10px; margin-bottom: 15px; background: #0f172a; border: 1px solid #64748b; color: #fff; border-radius: 6px; box-sizing: border-box; }
-        .security-bar { background: #064e3b; border: 1px solid #059669; color: #a7f3d0; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #475569; }
-        th { color: #38bdf8; }
-        .badge-published { background: #065f46; color: #a7f3d0; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-        button.submit-btn { background: #0284c7; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.2s; }
-        button.submit-btn:hover { background: #0369a1; }
-        .message { background: #065f46; color: #a7f3d0; padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center; font-weight: bold; }
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #fff; padding: 20px; display: flex; justify-content: center; }
+        .card { background: #1e293b; padding: 30px; border-radius: 10px; width: 650px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        input, textarea, select { width: 100%; padding: 10px; margin: 10px 0; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 5px; box-sizing: border-box; }
+        input[type="file"] { padding: 8px; background: #334155; cursor: pointer; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-save { background: #3b82f6; color: #fff; }
+        .btn-pub { background: #ef4444; color: #fff; }
+        #status { margin-top: 15px; font-weight: bold; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
-        <div class="form-container">
-            <h1>🚀 Dizlyzen AI Photo Manager</h1>
+    <div class="card">
+        <h2>✨ Samanta Samiti Media & Publisher Dashboard</h2>
+        <form id="credForm">
+            <label>Meta Access Token (User Token):</label>
+            <input type="text" name="meta_access_token" id="tokenInput" placeholder="Paste your Graph API Explorer token here">
+            <button type="button" class="btn-save" onclick="saveCreds()">💾 Save & Auto-Fetch Page Token</button>
+        </form>
+        <hr style="border-color: #475569; margin: 20px 0;">
+        <form id="pubForm" onsubmit="publishPost(event)">
+            <label>Title / Heading:</label>
+            <input type="text" id="title" value="जातिवाद का अंत और महापुरुषों के विचार">
             
-            <div class="security-bar">
-                <span>🛡️ Direct Photo & Text Graph API Active</span>
-                <span style="background: #0284c7; padding: 2px 6px; border-radius: 4px; font-size: 11px;">v7.2 Live</span>
-            </div>
+            <label>Campaign Description / Message:</label>
+            <textarea id="description">मानवता और कड़े कानून: जातिवाद के खात्मा की ओर कदम 🚀</textarea>
+            
+            <label>Upload Image or Video from Computer:</label>
+            <input type="file" id="mediaFile" accept="image/*,video/*">
 
-            {% if message %}
-                <div class="message">{{ message }}</div>
-            {% endif %}
-
-            <form action="/generate" method="POST">
-                
-                <div class="section-box">
-                    <label for="social_account">Select Connected Social Account:</label>
-                    <select name="social_account" id="social_account">
-                        <option value="Samantasamiti">📌 Samantasamiti (Page ID: 1352257637972181)</option>
-                    </select>
-                </div>
-
-                <div class="section-box">
-                    <label for="title">Campaign Title:</label>
-                    <input type="text" name="title" id="title" value="जातिवाद का अंत और महापुरुषों के विचार" required>
-
-                    <label for="quote">Campaign Caption / Description:</label>
-                    <textarea name="quote" id="quote" rows="3">मानवता और कड़े कानून: जातिवाद के खात्मा की ओर कदम 🚀</textarea>
-
-                    <label for="image_url">Image URL (Direct Public Image Link):</label>
-                    <input type="text" name="image_url" id="image_url" value="https://picsum.photos/800/600" placeholder="Paste direct image link here">
-
-                    <label for="hashtags">Automatic Hashtags:</label>
-                    <input type="text" name="hashtags" id="hashtags" value="#Samantasamiti #DizlyzenAI">
-                </div>
-
-                <button type="submit" class="submit-btn">✨ Send Photo Dispatch to Facebook</button>
-            </form>
-
-            <div class="section-box" style="margin-top: 30px;">
-                <h3 style="color: #38bdf8; margin-top: 0;">📊 Dispatch Log</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Campaign Title</th>
-                            <th>Platform</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in history %}
-                        <tr>
-                            <td>{{ item.title }}</td>
-                            <td>{{ item.platform }}</td>
-                            <td><span class="badge-published">Published</span></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            <button type="submit" class="btn-pub">✨ Upload Media & Publish to Facebook</button>
+        </form>
+        <div id="status"></div>
     </div>
+    <script>
+        async function saveCreds() {
+            let token = document.getElementById('tokenInput').value;
+            let res = await fetch('/onboard-client', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'meta_access_token=' + encodeURIComponent(token)
+            });
+            let data = await res.json();
+            document.getElementById('status').innerText = data.message;
+            document.getElementById('status').style.color = '#10b981';
+        }
+        async function publishPost(e) {
+            e.preventDefault();
+            document.getElementById('status').innerText = "Uploading media and posting to Facebook...";
+            document.getElementById('status').style.color = '#f59e0b';
+            
+            let formData = new FormData();
+            formData.append('title', document.getElementById('title').value);
+            formData.append('description', document.getElementById('description').value);
+            let fileInput = document.getElementById('mediaFile').files[0];
+            if(fileInput) {
+                formData.append('media', fileInput);
+            }
+
+            let res = await fetch('/trigger-upload', {
+                method: 'POST',
+                body: formData
+            });
+            let data = await res.json();
+            if(res.ok) {
+                document.getElementById('status').innerText = "✅ Successfully posted to Facebook! Post ID: " + data.post_id;
+                document.getElementById('status').style.color = '#10b981';
+            } else {
+                document.getElementById('status').innerText = "❌ " + data.message;
+                document.getElementById('status').style.color = '#ef4444';
+            }
+        }
+    </script>
 </body>
 </html>
 """
 
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY)
+    return render_template_string(HTML_TEMPLATE)
 
-@app.route("/generate", methods=["POST"])
-def generate_and_publish():
-    try:
-        title = request.form.get("title")
-        quote = request.form.get("quote")
-        image_url = request.form.get("image_url")
-        hashtags = request.form.get("hashtags")
+@app.route('/onboard-client', methods=['POST'])
+def onboard_client():
+    data = request.form or request.json or {}
+    token = data.get('meta_access_token') or data.get('token')
+    
+    page_token = token
+    if token:
+        try:
+            acc_res = requests.get("https://graph.facebook.com/v18.0/me/accounts", params={'access_token': token})
+            acc_data = acc_res.json()
+            if 'data' in acc_data and len(acc_data['data']) > 0:
+                page_token = acc_data['data'][0]['access_token']
+                print(f"✅ Page Access Token fetched for: {acc_data['data'][0].get('name')}")
+        except Exception as e:
+            print(f"⚠️ Auto-fetch warning: {e}")
+
+    os.makedirs('clients/client_1', exist_ok=True)
+    config_path = 'clients/client_1/config.json'
+    
+    config = {}
+    if os.path.exists(config_path):
+        with open(config_path, 'r', encoding='utf-8') as f:
+            try:
+                config = json.load(f)
+            except:
+                pass
+                
+    if page_token:
+        config['meta_access_token'] = page_token
         
-        full_message = f"{title}\n\n{quote}\n\n{hashtags}"
-        api_logs = []
-
-        # Step 1: Fetch Page Access Token dynamically
-        accounts_url = f"https://graph.facebook.com/v18.0/me/accounts?access_token={FB_USER_TOKEN}"
-        acc_res = requests.get(accounts_url).json()
+    with open(config_path, 'w', encoding='utf-8') as f:
+        json.dump(config, f, indent=4)
         
-        page_access_token = None
-        if "data" in acc_res:
-            for page in acc_res["data"]:
-                if page.get("id") == FB_PAGE_ID:
-                    page_access_token = page.get("access_token")
-                    break
+    return jsonify({"status": "success", "message": "Credentials saved & Page Token auto-fetched successfully!"})
 
-        if not page_access_token:
-            return render_template_string(
-                UNIFIED_DASHBOARD_TEMPLATE, 
-                history=CAMPAIGN_HISTORY, 
-                message="❌ Error: Page Access Token could not be fetched."
-            )
+def perform_facebook_upload(title, description, file_path):
+    config_path = 'clients/client_1/config.json'
+    if not os.path.exists(config_path):
+        print("❌ Config file not found!")
+        return False
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
 
-        # Step 2: Post Photo + Caption directly to Facebook Page
-        fb_url = f"https://graph.facebook.com/v18.0/{FB_PAGE_ID}/photos"
-        payload = {
-            "url": image_url,
-            "message": full_message,
-            "access_token": page_access_token
-        }
-        res = requests.post(fb_url, data=payload)
-        res_json = res.json()
+    token = config.get('meta_access_token')
+    smart_desc = f"{title}\n\n{description}"
+    
+    if not token:
+        print("❌ Facebook Error: Missing Token.")
+        return False
+
+    # Agar user ne file upload ki hai toh usko multipart/form-data se bhejenge
+    if file_path and os.path.exists(file_path):
+        # Check if it's video or image based on extension
+        is_video = file_path.lower().endswith(('.mp4', '.mov', '.avi', '.mkv'))
+        url = f"https://graph.facebook.com/v18.0/me/{'videos' if is_video else 'photos'}"
         
-        if "id" in res_json or "post_id" in res_json:
-            post_id = res_json.get("id") or res_json.get("post_id")
-            api_logs.append(f"Facebook Photo Post Success! ID: {post_id}")
-        else:
-            error_msg = res_json.get("error", {}).get("message", "Unknown Error")
-            api_logs.append(f"Facebook Photo Failed: {error_msg}")
+        with open(file_path, 'rb') as media_file:
+            files = {'source' if is_video else 'file': media_file}
+            payload = {'description' if is_video else 'caption': smart_desc, 'access_token': token}
+            res = requests.post(url, data=payload, files=files)
+    else:
+        # Fallback to text post if no media attached
+        url = "https://graph.facebook.com/v18.0/me/feed"
+        payload = {'message': smart_desc, 'access_token': token}
+        res = requests.post(url, data=payload)
+    
+    result = res.json()
+    print(f"🎉 Facebook Upload Response: {result}")
+    return result.get('post_id') or result.get('id')
 
-        new_entry = {"id": len(CAMPAIGN_HISTORY)+1, "title": title, "platform": "Facebook Page (Photo)", "status": "Published", "date": "Just Now"}
-        CAMPAIGN_HISTORY.insert(0, new_entry)
+@app.route('/trigger-upload', methods=['POST'])
+def trigger_upload():
+    title = request.form.get('title', 'Samantasamiti Post')
+    description = request.form.get('description', '')
+    
+    saved_file_path = None
+    if 'media' in request.files:
+        file = request.files['media']
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            saved_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(saved_file_path)
+    
+    post_id = perform_facebook_upload(title, description, saved_file_path)
+    if post_id:
+        return jsonify({"status": "success", "post_id": post_id})
+    else:
+        return jsonify({"status": "error", "message": "Publishing failed! Check terminal logs."}), 400
 
-        return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY, message=f"API Response Log -> {', '.join(api_logs)}")
-
-    except Exception as e:
-        return render_template_string(UNIFIED_DASHBOARD_TEMPLATE, history=CAMPAIGN_HISTORY, message=f"❌ Error: {e}")
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
